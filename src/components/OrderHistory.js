@@ -31,7 +31,7 @@ function OrderHistory({ orders }) {
               <td style={{ border: '1px solid #ddd', padding: '8px' }}>{order.customerName}</td>
               <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'right' }}>${order.total.toFixed(2)}</td>
               <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{order.items.length}</td>
-              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{new Date(order.id.split('-')[1]).toLocaleDateString()}</td> {/* 從ID中解析日期，簡化處理 */}
+              <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>{new Date(Number(order.id.split('-')[1])).toLocaleDateString()}</td> {/* 從ID中解析日期，簡化處理 */}
             </tr>
           ))}
         </tbody>

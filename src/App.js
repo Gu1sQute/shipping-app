@@ -25,6 +25,7 @@ function App() {
 
   // 新增一個狀態來儲存所有歷史訂單
   const [historicalOrders, setHistoricalOrders] = useState([]); // 初始為空陣列
+  console.log('當前歷史訂單:', historicalOrders);
 
   const handleChangeMessage = () => {
     setMessage("系統已啟動，開始查詢貨品！"); // 調整啟動訊息
