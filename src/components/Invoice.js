@@ -2,7 +2,7 @@
 import React, { forwardRef } from 'react'; // 引入 forwardRef
 
 // 使用 forwardRef 包裹 Invoice 元件，並接收 ref 作為第二個參數
-  const Invoice = forwardRef(({ order }, ref) => { // Invoice 元件現在接收 ref
+const Invoice = forwardRef(({ order }, ref) => { // Invoice 元件現在接收 ref
   if (!order || !order.customerName) {
     return <p>請選擇有效的訂單進行發票預覽。</p>;
   }

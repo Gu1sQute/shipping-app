@@ -1,7 +1,8 @@
 // src/components/OrderForm.js
-import React, { useState, useRef, useEffect } from 'react'; // 引入 useRef Hook
-import { useReactToPrint } from 'react-to-print'; // 引入 useReactToPrint
-import Invoice from './Invoice'; // 引入 Invoice 元件
+// 引入 React, useState, useRef, 和 useEffect
+import React, { useState, useRef, useEffect } from 'react';
+import { useReactToPrint } from 'react-to-print';
+import Invoice from './Invoice';
 
 function OrderForm({ allProducts }) {
   // 用於儲存訂單的整體狀態，包括客戶資訊和訂單品項
@@ -19,7 +20,6 @@ function OrderForm({ allProducts }) {
 
   // 新增狀態來儲存已提交的訂單，用於顯示發票
   const [submittedOrder, setSubmittedOrder] = useState(null);
-
   // 新增一個狀態來追蹤是否應該立即觸發列印
   const [shouldPrint, setShouldPrint] = useState(false);
 
@@ -32,6 +32,7 @@ function OrderForm({ allProducts }) {
     },
     documentTitle: '發票',
     pageStyle: '@page { size: A4; margin: 20mm; }', // 可選的列印樣式
+    // 新增一個回調，在列印任務完成後執行
     onAfterPrint: () => {
       setShouldPrint(false); // 列印完成後重置 shouldPrint
     }
@@ -101,12 +102,12 @@ function OrderForm({ allProducts }) {
     setCurrentItem({ productId: '', quantity: 1 });
   };
 
-const handleRemoveItemFromOrder = (productIdToRemove) => {
-  setOrder(prevOrder => ({
-    ...prevOrder,
-    items: prevOrder.items.filter(item => item.productId !== productIdToRemove)
-  }));
-};
+  const handleRemoveItemFromOrder = (productIdToRemove) => {
+    setOrder(prevOrder => ({
+      ...prevOrder,
+      items: prevOrder.items.filter(item => item.productId !== productIdToRemove)
+    }));
+  };
 
   // 計算訂單總價
   const calculateTotal = () => {
@@ -132,24 +133,27 @@ const handleRemoveItemFromOrder = (productIdToRemove) => {
 
     // 提交後，將當前訂單保存到 submittedOrder 狀態，以便顯示發票
     setSubmittedOrder({ ...order, total: calculateTotal() }); // 複製訂單數據並添加總價
+    // 提交後立即設定 shouldPrint 為 true，這會觸發 useEffect
+    setShouldPrint(true);
 
     // 提交後清空表單
     setOrder({ customerName: '', customerContact: '', items: [] });
     setCurrentItem({ productId: '', quantity: 1 });
   };
+
   // 使用 useEffect 監聽 submittedOrder 和 shouldPrint
   useEffect(() => {
     // 只有當 submittedOrder 有值且 shouldPrint 為 true 時才觸發列印
     if (submittedOrder && shouldPrint) {
       // 我們在這裡添加一個小小的延遲，確保 DOM 完全更新
-      // 在真實應用中，如果列印內容非常複雜，可能需要更長的延遲
       const timer = setTimeout(() => {
         handlePrint();
       }, 100); // 延遲 100 毫秒
 
       return () => clearTimeout(timer); // 清除定時器，防止內存洩漏
     }
-  }, [submittedOrder, shouldPrint, handlePrint]); // 依賴項
+  }, [submittedOrder, shouldPrint, handlePrint]); // 依賴項: 這些狀態或函式變化時，effect 會重新運行
+
   return (
     <section style={{ marginTop: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2>建立新訂單</h2>
@@ -275,6 +279,7 @@ const handleRemoveItemFromOrder = (productIdToRemove) => {
           <h3 style={{ textAlign: 'center' }}>發票預覽</h3>
           <Invoice order={submittedOrder} ref={componentRef} />
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            {/* 點擊這個按鈕時，不再直接觸發列印，而是設定 shouldPrint 為 true */}
             <button onClick={() => setShouldPrint(true)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginRight: '10px' }}>列印發票</button>
             <button onClick={() => setSubmittedOrder(null)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>建立新訂單</button>
           </div>
