@@ -1,5 +1,5 @@
 // src/components/OrderForm.js
-import React, { useState, useRef } from 'react'; // 引入 useRef Hook
+import React, { useState, useRef, useEffect } from 'react'; // 引入 useRef Hook
 import { useReactToPrint } from 'react-to-print'; // 引入 useReactToPrint
 import Invoice from './Invoice'; // 引入 Invoice 元件
 
@@ -17,19 +17,25 @@ function OrderForm({ allProducts }) {
     quantity: 1,
   });
 
-// 新增狀態來儲存已提交的訂單，用於顯示發票
-const [submittedOrder, setSubmittedOrder] = useState(null);
+  // 新增狀態來儲存已提交的訂單，用於顯示發票
+  const [submittedOrder, setSubmittedOrder] = useState(null);
 
-// useRef 用於獲取要列印的元件的 DOM 引用
-const componentRef = useRef();
-// useReactToPrint 是一個 Hook，它返回一個列印函式
-const handlePrint = useReactToPrint({
-  content: () => {
-    return componentRef.current;
-  },
-  documentTitle: '發票',
-  pageStyle: '@page { size: A4; margin: 20mm; }', // 可選的列印樣式
-});
+  // 新增一個狀態來追蹤是否應該立即觸發列印
+  const [shouldPrint, setShouldPrint] = useState(false);
+
+  // useRef 用於獲取要列印的元件的 DOM 引用
+  const componentRef = useRef();
+  // useReactToPrint 是一個 Hook，它返回一個列印函式
+  const handlePrint = useReactToPrint({
+    content: () => {
+      return componentRef.current;
+    },
+    documentTitle: '發票',
+    pageStyle: '@page { size: A4; margin: 20mm; }', // 可選的列印樣式
+    onAfterPrint: () => {
+      setShouldPrint(false); // 列印完成後重置 shouldPrint
+    }
+  });
 
   // 處理客戶資訊輸入框的變化
   const handleCustomerInfoChange = (event) => {
@@ -131,7 +137,19 @@ const handleRemoveItemFromOrder = (productIdToRemove) => {
     setOrder({ customerName: '', customerContact: '', items: [] });
     setCurrentItem({ productId: '', quantity: 1 });
   };
+  // 使用 useEffect 監聽 submittedOrder 和 shouldPrint
+  useEffect(() => {
+    // 只有當 submittedOrder 有值且 shouldPrint 為 true 時才觸發列印
+    if (submittedOrder && shouldPrint) {
+      // 我們在這裡添加一個小小的延遲，確保 DOM 完全更新
+      // 在真實應用中，如果列印內容非常複雜，可能需要更長的延遲
+      const timer = setTimeout(() => {
+        handlePrint();
+      }, 100); // 延遲 100 毫秒
 
+      return () => clearTimeout(timer); // 清除定時器，防止內存洩漏
+    }
+  }, [submittedOrder, shouldPrint, handlePrint]); // 依賴項
   return (
     <section style={{ marginTop: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2>建立新訂單</h2>
@@ -257,7 +275,7 @@ const handleRemoveItemFromOrder = (productIdToRemove) => {
           <h3 style={{ textAlign: 'center' }}>發票預覽</h3>
           <Invoice order={submittedOrder} ref={componentRef} />
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <button onClick={handlePrint} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginRight: '10px' }}>列印發票</button>
+            <button onClick={() => setShouldPrint(true)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginRight: '10px' }}>列印發票</button>
             <button onClick={() => setSubmittedOrder(null)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>建立新訂單</button>
           </div>
         </div>
