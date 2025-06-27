@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import Invoice from './Invoice';
 
-function OrderForm({ allProducts }) {
+function OrderForm({ allProducts, onOrderSubmit }) {
   // 用於儲存訂單的整體狀態，包括客戶資訊和訂單品項
   const [order, setOrder] = useState({
     customerName: '',
@@ -151,8 +151,11 @@ function OrderForm({ allProducts }) {
     console.log("提交的訂單數據:", order);
     alert("訂單已提交 (模擬提交)！查看控制台以獲取訂單詳情。");
 
-    // 提交後，將當前訂單保存到 submittedOrder 狀態，以便顯示發票
-    setSubmittedOrder({ ...order, total: calculateTotal() }); // 複製訂單數據並添加總價
+    const finalOrder = { ...order, total: calculateTotal() };
+    setSubmittedOrder(finalOrder); // 將當前訂單保存到 submittedOrder 狀態
+    // 呼叫父元件傳遞下來的 onOrderSubmit 函式，傳遞完整的訂單數據
+    onOrderSubmit(finalOrder);
+ 
     // 提交後立即設定 shouldPrint 為 true，這會觸發 useEffect
     setShouldPrint(true);
 

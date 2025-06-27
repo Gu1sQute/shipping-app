@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Header from './components/Header';
 import ProductSearch from './components/ProductSearch';
 import OrderForm from './components/OrderForm';
+import OrderHistory from './components/OrderHistory';
 import './App.css';
 
 function App() {
@@ -21,6 +22,9 @@ function App() {
 
   // 新增一個狀態來儲存搜尋結果
   const [searchResults, setSearchResults] = useState([]);
+
+  // 新增一個狀態來儲存所有歷史訂單
+  const [historicalOrders, setHistoricalOrders] = useState([]); // 初始為空陣列
 
   const handleChangeMessage = () => {
     setMessage("系統已啟動，開始查詢貨品！"); // 調整啟動訊息
@@ -61,6 +65,15 @@ function App() {
      // 初次載入時，呼叫 handleSearch 並傳遞空的搜尋條件物件，以顯示所有產品
      handleSearch({ name: '', supplier: '' });
   }, [allProducts]);
+
+  // 新增一個函式，用於從子元件接收已提交的訂單
+  const handleAddOrder = (newOrder) => {
+    // 給訂單一個唯一的 ID (實際應用中可能由後端生成)
+    const orderWithId = { ...newOrder, id: `order-${Date.now()}` };
+    setHistoricalOrders(prevOrders => [...prevOrders, orderWithId]); // 將新訂單添加到歷史訂單列表
+    console.log('新訂單已添加到歷史記錄:', orderWithId);
+  };
+
   return (
     <div className="App">
       <Header title="船務管理中心" />
@@ -79,7 +92,11 @@ function App() {
 
       <hr />
 
-      <OrderForm allProducts={allProducts} />
+      <OrderForm allProducts={allProducts} onOrderSubmit={handleAddOrder} />
+
+      <hr />
+      
+      <OrderHistory orders={historicalOrders} /> {/* 傳遞歷史訂單列表給 OrderHistory 元件 */}
     </div>
   );
 }
