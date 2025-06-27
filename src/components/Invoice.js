@@ -13,7 +13,16 @@ const Invoice = forwardRef(({ order }, ref) => { // Invoice 元件現在接收 r
 
   return (
     // 將 ref 應用到最外層的 div 元素
-    <div ref={ref} style={{ padding: '30px', border: '1px solid #000', margin: '20px auto', maxWidth: '800px', fontFamily: 'Arial, sans-serif', lineHeight: '1.6' }}>
+    <div ref={ref} style={{
+      padding: '30px',
+      border: '1px solid #000',
+      margin: '20px auto',
+      maxWidth: '800px',
+      fontFamily: 'Arial, sans-serif',
+      lineHeight: '1.6',
+      backgroundColor: 'white',
+      color: 'black'
+    }}>
       <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>發票 (Invoice)</h2>
 
       {/* 公司資訊 */}

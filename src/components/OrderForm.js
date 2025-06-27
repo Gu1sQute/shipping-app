@@ -27,14 +27,34 @@ function OrderForm({ allProducts }) {
   const componentRef = useRef();
   // useReactToPrint 是一個 Hook，它返回一個列印函式
   const handlePrint = useReactToPrint({
-    content: () => {
-      return componentRef.current;
-    },
+    contentRef: componentRef,
     documentTitle: '發票',
-    pageStyle: '@page { size: A4; margin: 20mm; }', // 可選的列印樣式
-    // 新增一個回調，在列印任務完成後執行
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      @media print {
+        body {
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+      }
+    `,
+    onBeforeGetContent: () => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 100);
+      });
+    },
     onAfterPrint: () => {
-      setShouldPrint(false); // 列印完成後重置 shouldPrint
+      setShouldPrint(false);
+      console.log('列印完成');
+    },
+    onPrintError: (errorLocation, error) => {
+      console.error('列印錯誤:', errorLocation, error);
+      alert('列印時發生錯誤，請檢查瀏覽器設定或重試。');
     }
   });
 
@@ -152,7 +172,7 @@ function OrderForm({ allProducts }) {
 
       return () => clearTimeout(timer); // 清除定時器，防止內存洩漏
     }
-  }, [submittedOrder, shouldPrint, handlePrint]); // 依賴項: 這些狀態或函式變化時，effect 會重新運行
+  }, [submittedOrder, shouldPrint]); // 移除 handlePrint 依賴項，避免無限循環
 
   return (
     <section style={{ marginTop: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
@@ -279,8 +299,8 @@ function OrderForm({ allProducts }) {
           <h3 style={{ textAlign: 'center' }}>發票預覽</h3>
           <Invoice order={submittedOrder} ref={componentRef} />
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            {/* 點擊這個按鈕時，不再直接觸發列印，而是設定 shouldPrint 為 true */}
-            <button onClick={() => setShouldPrint(true)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginRight: '10px' }}>列印發票</button>
+            {/* 直接調用 handlePrint 函數 */}
+            <button onClick={handlePrint} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', marginRight: '10px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}>列印發票</button>
             <button onClick={() => setSubmittedOrder(null)} style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer', background: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>建立新訂單</button>
           </div>
         </div>
